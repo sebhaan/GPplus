@@ -15,7 +15,7 @@ Multiple options for processing are included (see settings.py):
  * Option for generating html maps for result visualisation.
  * Options for splitting in train and test sets and x-fold cross-validation
 
-GPplus is being actively developed in [a public repository on GitHub](https://github.com/sebhaan/GPplus). Ff you have any questions, please [open an issue](https://github.com/sebhaan/GPplus/issues) .
+GPplus is being actively developed in [a public repository on GitHub](https://github.com/sebhaan/GPplus). If you have any questions, please [open an issue](https://github.com/sebhaan/GPplus/issues).
 
 Additional dependencies
 ---------------------
