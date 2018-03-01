@@ -15,7 +15,14 @@ Multiple options for processing are included (see settings.py):
  * Option for generating html maps for result visualisation.
  * Options for splitting in train and test sets and x-fold cross-validation
 
-GPplus is being actively developed in [a public repository on GitHub](https://github.com/sebhaan/GPplus) so if you have any trouble, [open an issue](https://github.com/sebhaan/GPplus/issues) .
+GPplus is being actively developed in [a public repository on GitHub](https://github.com/sebhaan/GPplus). Ff you have any questions, please [open an issue](https://github.com/sebhaan/GPplus/issues) .
+
+Additional dependencies
+---------------------
+
+* emcee, see [here](https://github.com/dfm/emcee.git) for installation from Github
+* george, see [here](https://github.com/dfm/george.git) for installation from Github (only for this GPplus version, will be replaced with our own in-house GP in next versions)
+* geopandas (optional for geospatial pre-processing of polygon shapefiles)
 
 License & Attribution
 ---------------------
