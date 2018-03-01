@@ -8,16 +8,14 @@ The implemented method is a fully probabilistic approach, allowing uncertainties
 GPplus provides mutliple plots for evaluation and inference. The results, parameters, and uncertainties are stored as csv files and the complete posterior distribution as npy files. If required, more postprocessing and visualisation scripts can be requested from author (sebastian.haan@sydney.edu.au).
 
 Multiple options for processing are included (see settings.py):
- - Option for generating simulated data.
- - Option for extracting spatial component from polygon shapefiles.
- - Options for MCMC setup: number of iterations, number of walkers, length of burn-in phase
- - Options for multiple kernels to model spatial cross-correlations
- - Option for generating html maps for result visualisation.
- - Options for splitting in train and test sets and x-fold cross-validation
+ * Option for generating simulated data.
+ * Option for extracting spatial component from polygon shapefiles.
+ * Options for MCMC setup: number of iterations, number of walkers, length of burn-in phase
+ * Options for multiple kernels to model spatial cross-correlations
+ * Option for generating html maps for result visualisation.
+ * Options for splitting in train and test sets and x-fold cross-validation
 
-GPplus is being actively developed in `a public repository on GitHub
-<https://github.com/sebhaan/GPplus>`_ so if you have any trouble, `open an issue
-<https://github.com/sebhaan/GPplus/issues>`_ .
+GPplus is being actively developed in [a public repository on GitHub](https://github.com/sebhaan/GPplus) so if you have any trouble, [open an issue](https://github.com/sebhaan/GPplus/issues) .
 
 License & Attribution
 ---------------------
