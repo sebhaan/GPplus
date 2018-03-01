@@ -5,4 +5,25 @@ Inference about model parameters and their uncertainty is carried out via a fast
 
 The implemented method is a fully probabilistic approach, allowing uncertainties in prediction and inference to be quantified via the posterior distributions of interest. By using Bayesian updating, these predictions and inferences are dynamic in the sense that they change as new information becomes available. 
 
+GPplus provides mutliple plots for evaluation and inference. The results, parameters, and uncertainties are stored as csv files and the complete posterior distribution as npy files. If required, more postprocessing and visualisation scripts can be requested from author (sebastian.haan@sydney.edu.au).
 
+Multiple options for processing are included (see settings.py):
+ - Option for generating simulated data.
+ - Option for extracting spatial component from polygon shapefiles.
+ - Options for MCMC setup: number of iterations, number of walkers, length of burn-in phase
+ - Options for multiple kernels to model spatial cross-correlations
+ - Option for generating html maps for result visualisation.
+ - Options for splitting in train and test sets and x-fold cross-validation
+
+GPplus is being actively developed in `a public repository on GitHub
+<https://github.com/sebhaan/GPplus>`_ so if you have any trouble, `open an issue
+<https://github.com/sebhaan/GPplus/issues>`_ .
+
+License & Attribution
+---------------------
+
+Copyright 2018 Sebastian Haan and contributors.
+
+The source code is made available under the terms of the MIT license.
+
+If you make use of this code, please acknowledge GPplus and authors.
