@@ -23,6 +23,7 @@ Additional dependencies
 * emcee, see [here](https://github.com/dfm/emcee.git) for installation from Github
 * george, see [here](https://github.com/dfm/george.git) for installation from Github (only for this GPplus version, will be replaced with our own in-house GP in next versions)
 * geopandas (optional for geospatial pre-processing of polygon shapefiles)
+* folium (optional for intearctive html mapping)
 
 License & Attribution
 ---------------------
