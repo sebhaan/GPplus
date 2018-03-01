@@ -11,7 +11,7 @@ import numpy as np
 import math
 import geopandas as gpd   # use latest git version rather than conda or pip installation!
 import pandas as pd
-import shapely
+#import shapely
 import csv
 
 
