@@ -7,17 +7,17 @@ Multiple plots are generated for evaluation (please contact author if more evalu
 
 This machine-learning implementation is a fully probabilistic approach to modelling spatial dependent data 
 while reflecting all uncertainties in the prediction as well as the uncertainties surrounding model parameters.
-The framework has been developed for multiple use-cases and has been first tested by modelling 
+The framework has been developed for multiple use-cases and has been first tested by modelling. 
 the dependency between crime data and environmental factors such as demographic characteristics and spatial location. 
 (Marchant et al. 2018).
 
 Currently multiple options are included (see settings.py): 
  - Option for generating simulated data.
  - Option for extracting spatial component from polygon shapefiles.
- - Options for multiple kernels
+ - Options for multiple kernels.
  - Option for generating html maps for result visualisation.
- - options x-fold cross-validation
- - options for splitting in train and test sets
+ - options x-fold cross-validation.
+ - options for splitting in train and test sets.
  
 Version 0.1
 Author: Seb Haan
@@ -63,7 +63,10 @@ if calc_center and not simulate:
 
 # 2) Read in target data (e.g. crime offences) and feature data (e.g. demographics from census data) and combine with spatial data
 print("Reading in data and combining with spatial geometry ...")
-spatial.read_csvdata(outpath + fname_input)
+if simulate:
+    spatial.read_csvdata(outpath + fname_input)
+else:
+    spatial.read_csvdata(data_path + fname_input)
 if calc_center:
     spatial.combine_data()
 else:

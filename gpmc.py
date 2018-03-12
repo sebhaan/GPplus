@@ -7,7 +7,6 @@ Author: Sebastian Haan
 from __future__ import division, print_function
 from mpl_toolkits.mplot3d import *
 import matplotlib.pylab as plt
-#plt.style.use('ggplot')
 from matplotlib import cm
 import datetime as dt
 import os
@@ -21,6 +20,7 @@ import seaborn as sns
 sns.set(font_scale=1.5)
 #np.random.seed(3121)
 from settings import *
+
 
 def set_box_color(bp, color):
     plt.setp(bp['boxes'], color=color)
@@ -193,7 +193,11 @@ class GPMC:
         return mu_blr
 
     def lnprob_gp(self, p, sigma, dropout=0.):
-        # Trivial uniform in the log.:
+        """ Calcuates prior and likelihood of GP
+        :param p: GP hyperparameters
+        :param sigma: noise sigma
+        :param dropout: number of random datapoints to exclude for each iteration, default = 0 (no dropout)
+        """
         if np.any((-30 > p) + (p > 30)):
             return -np.inf
         if np.any((0.001 > sigma) + (sigma > 2)):
@@ -203,7 +207,10 @@ class GPMC:
         #Uncertainty of y:
         err_blr = sigma
         # Update the kernel and compute the lnlikelihood:
-        self.kernel.pars = np.exp(p)
+        if george.__version__ < '0.3.0':
+            self.kernel.pars = np.exp(p)
+        else:
+            self.kernel.set_parameter_vector(p)
         gp = george.GP(self.kernel, mean=np.mean(self.residual_blr))
         if dropout > 0.:
             # drop random % of array and test predictions to avoid overfitting
@@ -213,19 +220,23 @@ class GPMC:
         try:
             if dropout > 0.:
                 gp.compute(self.X_gp[mask], err_blr)
-                # Note that this can be speed up with pre-calculating covariance matrix and then updating 
-                # only uncertainties by adding in quadrature to the diagonal of the covariance matrix.
-                # To Do: replace george with manually implemented GP using cholesky decomposition
                 gplnlike = gp.lnlikelihood(self.residual_blr[mask], quiet=True)
                 # mu_gp_test, _ = gp.predict(self.residual_blr[mask], x_gp_test)
             else:
                 gp.compute(self.X_gp, err_blr)
+                # Note that this can be speed up with pre-calculating covariance matrix and then updating 
+                # only uncertainties by adding in quadrature to the diagonal of the covariance matrix.
+                # To Do: replace george with manually implemented GP using cholesky decomposition
                 gplnlike = gp.lnlikelihood(self.residual_blr, quiet=True)
         except:
             gplnlike = -np.inf
         return lnprior + gplnlike
 
     def lnprior_blr(self, beta, sigma):
+        """Prior for Bayesian Linear Regression 
+        :param beta: coefficient parameters
+        :param sigma: noise sigma
+        """
         # log of prior for BLR; see paper.
         q = len(beta)  # length of all features
         c = self.X_blr.shape[0] # length of data points
@@ -238,7 +249,11 @@ class GPMC:
         return ln_prob
 
     def lnlikelihood_blr(self, alpha, beta, sigma):
-        # Returns Log Likelihood of BLR and residual (for updating GP)
+        """ Returns Log Likelihood of BLR and residual (for updating GP)
+        :param alpha: constant parameter
+        :param beta: coefficient parameters 
+        :param sigma: noise sigma
+        """
         y_model = alpha + np.sum(beta * self.X_blr, axis=1)
         resid = (self.y - y_model)
         return -0.5 * np.sum(np.log(2 * np.pi * sigma ** 2) + resid ** 2 / sigma ** 2), resid
@@ -284,7 +299,10 @@ class GPMC:
         self.ndim = np.int(self.ndim_gp + self.ndim_blr + 2)
         sampler = emcee.EnsembleSampler(self.nwalkers, self.ndim, self.lnprob)
         # Initialize the walkers:
-        p0_gp = np.log(self.kernel.pars)
+        if george.__version__ < '0.3.0':
+            p0_gp = np.log(self.kernel.pars)
+        else: 
+            p0_gp = self.kernel.get_parameter_vector()
         alpha0 = 0.1
         beta0 = np.zeros((self.ndim_blr))
         sigma0 = 0.1
@@ -339,8 +357,12 @@ class GPMC:
         self.mu_blr = self.mu_blr 
         self.residual_blr = self.residual_blr 
         gp = george.GP(self.kernel, mean=np.mean(self.residual_blr))
-        gp.kernel.pars = np.exp(p_fit)
-        self.gp_fit = gp.kernel.pars
+        if george.__version__ < '0.3.0':
+            gp.kernel.pars = np.exp(p_fit)
+            self.gp_fit = gp.kernel.pars
+        else:
+            gp.kernel.set_parameter_vector(p_fit)
+            self.gp_fit = gp.kernel.get_parameter_vector(p_fit)
         gp.compute(self.X_gp, self.sigma_fit)
         self.mu_gp, cov_gp = gp.predict(self.residual_blr, self.X_gp) # GP Model
         self.std_gp = np.sqrt(np.diag(cov_gp)) # standard deviation of GP
@@ -470,7 +492,10 @@ class GPMC:
             y_blr = self.predict_blr(self.X_blr, alpha, beta)
             resid_blr = self.y - y_blr
             gp = george.GP(self.kernel, mean=np.mean(resid_blr))
-            gp.kernel.pars = np.exp(self.samples_i[i, self.ndim_blr + 2:])
+            if george.__version__ < '0.3.0':
+                gp.kernel.pars = np.exp(self.samples_i[i, self.ndim_blr + 2:])
+            else:
+                gp.kernel.set_parameter_vector(self.samples_i[i, self.ndim_blr + 2:])
             try:
                 gp.compute(self.X_gp, sigma)
                 mu_gp, _ = gp.predict(resid_blr, self.X_gp)

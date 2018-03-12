@@ -3,16 +3,19 @@ Class for running spatial geoprocessing
 Version 0.1
 Author: Sebastian Haan
 """
-
+from __future__ import division, print_function
 import matplotlib.pylab as plt
 plt.style.use('ggplot')
 import os
 import numpy as np
 import math
-import geopandas as gpd   # use latest git version rather than conda or pip installation!
 import pandas as pd
-#import shapely
 import csv
+# Try to import Geopandas, only really neccessary for shapefile processing:
+try:
+    import geopandas as gpd   # use latest git version rather than conda or pip installation!
+except:
+    print('Warning: error while loading Geopandas. Will continue without geopandas...')
 
 
 
