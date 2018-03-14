@@ -362,7 +362,7 @@ class GPMC:
             self.gp_fit = gp.kernel.pars
         else:
             gp.kernel.set_parameter_vector(p_fit)
-            self.gp_fit = gp.kernel.get_parameter_vector(p_fit)
+            self.gp_fit = gp.kernel.get_parameter_vector()
         gp.compute(self.X_gp, self.sigma_fit)
         self.mu_gp, cov_gp = gp.predict(self.residual_blr, self.X_gp) # GP Model
         self.std_gp = np.sqrt(np.diag(cov_gp)) # standard deviation of GP
