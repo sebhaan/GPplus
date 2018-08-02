@@ -211,7 +211,7 @@ class GPMC:
             self.kernel.pars = np.exp(p)
         else:
             self.kernel.set_parameter_vector(p)
-        gp = george.GP(self.kernel, mean=np.mean(self.residual_blr))
+        gp = george.GP(self.kernel, mean = np.mean(self.residual_blr))
         if dropout > 0.:
             # drop random % of array and test predictions to avoid overfitting
             mask = np.random.choice([False, True], len(self.X_gp), p=[dropout, 1.-dropout])
@@ -392,10 +392,7 @@ class GPMC:
         # Calculate models and residuals for test data
         if split_traintest > 0.:
             self.mu_blr_test = self.predict_blr(self.X_blr_test, self.alpha_fit, self.beta_fit)  # BLR Model
-            self.residual_blr_test = (self.y_test - self.mu_blr_test)
-            gp = george.GP(self.kernel, mean=np.mean(self.residual_blr_test))
-            gp.compute(self.X_gp_test, self.sigma_fit)
-            self.mu_gp_test, _ = gp.predict(self.residual_blr_test, self.X_gp_test)  # GP Model 
+            self.mu_gp_test = gp.sample_conditional(self.residual_blr, self.X_gp_test) # Compute GP conditional on train data
             self.y_model_test = self.mu_gp_test + self.mu_blr_test  # Final Model 
         else:
             self.mu_blr_test, self.mu_gp_test, self.residual_blr_test, self.y_model_test = np.zeros(4)
@@ -414,8 +411,8 @@ class GPMC:
         self.results_file.write('Mean abs Residual train: {0} \n'.format(round(np.mean(abs(self.residual)),3)))
         self.results_file.write('Mean abs Residual BLR train: {0} \n'.format(round(np.mean(abs(self.residual_blr)),3)))
         self.results_file.write('Mean abs Residual GP train: {0} \n'.format(round(np.mean(abs(self.y - self.mu_gp)),3)))
-        rmse_train = np.sqrt(np.sum(self.residual**2)) / len(self.residual)
-        rmse_test = np.sqrt(np.sum(self.residual_test**2)) / len(self.residual_test)
+        rmse_train = np.sqrt(np.mean(self.residual**2))
+        rmse_test = np.sqrt(np.mean(self.residual_test**2))
         print('RMSE train: ', round(rmse_train, 3))
         print('RMSE test: ', round(rmse_test, 3))
         self.results_file.write('RMSE train: {0} \n'.format(round(rmse_train,3)))
@@ -505,21 +502,11 @@ class GPMC:
             self.residual_i[i] = np.sum(self.y - self.mu_i[i, :])
             # Calculate for test data:
             y_blr_test = self.predict_blr(self.X_blr_test, alpha, beta)
-            resid_blr_test = self.y_test - y_blr_test
-            gp = george.GP(self.kernel, mean=np.mean(resid_blr_test))
             try:
-                gp.compute(self.X_gp_test, sigma)
-                mu_gp_test, _ = gp.predict(resid_blr_test, self.X_gp_test)
+                mu_gp_test = gp.sample_conditional(self.residual_blr, self.X_gp_test)
                 self.mu_i_test[i, :] = y_blr_test + mu_gp_test
             except:
                 self.mu_i_test[i, :] = y_blr_test
-        self.perc2_area = np.asarray([np.percentile(self.mu_i[:, i], 2) for i in range(len(self.y))]) # rounded from 2.3
-        self.perc16_area = np.asarray([np.percentile(self.mu_i[:, i], 16) for i in range(len(self.y))])
-        self.perc50_area = np.asarray([np.percentile(self.mu_i[:, i], 50) for i in range(len(self.y))])
-        self.perc84_area = np.asarray([np.percentile(self.mu_i[:, i], 84) for i in range(len(self.y))])
-        self.perc97_area = np.asarray([np.percentile(self.mu_i[:, i], 98) for i in range(len(self.y))]) # rounded from 97.7
-        #print("Number of train areas within 2 and 97 percentile:", len(self.y[(self.y > self.perc2_area) & (self.y <= self.perc97_area)]))
-        #print("Number of train areas within 16 and 84 percentile:", len(self.y[(self.y > self.perc16_area) & (self.y <= self.perc84_area)]))
         ymodel_mean = np.mean(self.mu_i)
         ymodel_std = np.std(self.mu_i)
         ci95_train = len(self.y[(self.y >= (ymodel_mean - 2 * ymodel_std)) & (self.y < (ymodel_mean + 2 * ymodel_std))]) \
@@ -532,16 +519,16 @@ class GPMC:
         self.results_file.write('Percent of train locations in 95 percent CI: {0} \n'.format(ci95_train * 100.))
         print('Percent of test locations in 95 percent CI: ', ci95_test * 100.)
         self.results_file.write('Percent of test locations in 95 percent CI: {0} \n'.format(ci95_test * 100.))  
-        per97_train = np.percentile(self.mu_i, 97, axis=0)
-        per2_train = np.percentile(self.mu_i, 2, axis=0)
-        per97_test = np.percentile(self.mu_i_test, 97, axis=0)
-        per2_test = np.percentile(self.mu_i_test, 2, axis=0)
-       # ci_per95_train = len(self.y[(self.y > per2_train) & (self.y < per97_train)]) * 1. / len(self.y)
-       # ci_per95_test = len(self.y_test[(self.y_test > per2_test) & (self.y_test < per97_test)])  * 1./ len(self.y_test)
-       # print('Percent of train locations in 95 percent CI: ', np.round(ci_per95_train * 100.,3))
-       # self.results_file.write('Percent of train locations in 95 percent CI: {0} \n'.format(np.round(ci_per95_train * 100.,3)))
-       # print('Percent of test locations in 95 percent CI: ', np.round(ci_per95_test * 100.,3))
-       # self.results_file.write('Percent of test locations in 95 percent CI: {0} \n'.format(np.round(ci_per95_test * 100.,3)))  
+        self.per97_train = np.percentile(self.mu_i, 97, axis=0)
+        self.per84_train = np.percentile(self.mu_i, 84, axis=0)
+        self.per50_train = np.percentile(self.mu_i, 50, axis=0)
+        self.per16_train = np.percentile(self.mu_i, 16, axis=0)
+        self.per2_train = np.percentile(self.mu_i, 2, axis=0)
+        self.per97_test = np.percentile(self.mu_i_test, 97, axis=0)
+        self.per84_test = np.percentile(self.mu_i_test, 84, axis=0)
+        self.per50_test = np.percentile(self.mu_i_test, 50, axis=0)
+        self.per16_test = np.percentile(self.mu_i_test, 16, axis=0)
+        self.per2_test = np.percentile(self.mu_i_test, 2, axis=0)
 
 
     def plot_hist(self, par_list):
